@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <script src="https://www.brainshark.com/mkt_images/rest/jquery-3.4.1.min.js" type="text/javascript"></script>
+    
+    <title>Rest Reporting Example</title>
+
+    <script language="javascript" type="text/javascript">
+
+        var session = {};
+
+        $(document).ready(function () {
+		
+			/*
+				Establish a Brainshark session.   
+				Paramters:
+					"login_dir" : required : the login URL for your account
+					"username" : Brainshark Username
+					"password" : Brainshark password
+					"token" : optional : a long-lived token that can be used in place of username/password
+				Return Value:
+					On Success, a Brainshark session is returned.
+			*/
+			
+            $.ajax({
+                type: 'post',
+
+                url: 'https://www.brainshark.com/brainshark/webservices_mobile/session.ashx',
+
+                data: { login_dir: 'LOGIN DIRECTORY', username: 'USERNAME', password: 'PASSWORD' },
+
+                dataType: 'json',
+
+                success: function (data, status) {
+
+                    console.log(data);
+
+                    session = { sid: data.Id, sky: data.Key, uid: data.UId, token: data.SessionToken };
+
+                    $('#session').html("Session Token = ' + session.token);
+
+                    runReport();
+                },
+
+                error: function (xhr, status, e) {
+                    $('#session').html("Session: Eror creating session");
+                }
+            });
+        });
+
+        function runReport() {
+            $('#status').html("Running Report ... ");
+
+			/*
+				Run a Brainshark Report.   
+					path : required  : the path to the Brainshark report to execute
+			*/
+
+
+            $.ajax({
+                type: 'get',
+
+                url: 'https://www.brainshark.com/brainshark/webservices_mobile/report.ashx',
+
+                data: {
+                    begin_date: '2019-08-01 00:00:00',
+                    end_date: '2019-08-29 00:00:00',
+                    path: '/Brainshark Reports/Coaching Reports/Challenge Responses Report'
+                },
+
+                headers: { 'Brainshark-STok': session.token },
+
+                dataType: 'json',
+
+                success: function (data, status) {
+
+                    $('#status').html("Running Report ... Done</br>");
+
+                    $('#msg').html('Record Count: ' + data.Rows.length + '<br/> Check the console.');
+
+                    console.log(data);
+                },
+
+                error: function (xhr, status, e) {
+                    $('#status').html("Running Report ... Error!");
+                }
+            });
+        }
+
+
+    </script>
+
+</head>
+
+<body>
+    <div id="session"></div>
+
+    <div id="status"></div>
+
+    <div id="msg"></div>
+</body>
+
+</html>
